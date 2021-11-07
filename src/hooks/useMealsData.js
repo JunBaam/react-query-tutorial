@@ -38,20 +38,43 @@ export const useMealsData = (onSuccess, onError) => {
 export const useAddMealData = () => {
   const queryClient = useQueryClient();
   return useMutation(addMeal, {
-    onSuccess: (data) => {
-      // NOTE: invalidation  stale 쿼리를 폐기
-      //NOTE: 성공시 ui에 바로반영, 바로 데이터를 새로가져옴(re-fetch)
-      // queryClient.invalidateQueries("meals");
-      //NOTE: 기존 오래된 데이터에 새로추가된 데이터를 바로 추가해서 반영 (re-fetch 없이)
+    /** Handling Mutation Response */
+    // onSuccess: (data) => {
+    //   // NOTE: invalidation  stale 쿼리를 폐기
+    //   //NOTE: 성공시 ui에 바로반영, 바로 데이터를 새로가져옴(re-fetch)
+    //   // queryClient.invalidateQueries("meals");
+    //   //NOTE: 기존 오래된 데이터에 새로추가된 데이터를 바로 추가해서 반영 (re-fetch 없이)
+    //   queryClient.setQueryData("meals", (oldQueryData) => {
+    //     return {
+    //       ...oldQueryData,
+    //       data: [...oldQueryData.data, data.data],
+    //     };
+    //   });
+    // },
+    /**Optimistic Update  */
+    // NOTE: 낙관적인 업데이트 : 서버업데이트시 , Ui에서도 어짜피 업데이트 할것이란 가정으로부터 시작한다
+    // NOTE: 미리 Ui를 업데이트 시켜주고 서버를 통해 검증을 받고 다시 업데이트 or 롤백 하는방식
+    onMutate: async (newMeal) => {
+      await queryClient.cancelQueries("meals");
+      const previousMealData = queryClient.getQueryData("meals");
       queryClient.setQueryData("meals", (oldQueryData) => {
         return {
           ...oldQueryData,
-          data: [...oldQueryData.data, data.data],
+          data: [
+            ...oldQueryData.data,
+            { id: oldQueryData?.data?.length + 1, ...newMeal },
+          ],
         };
       });
+      return { previousMealData };
     },
-    // onMutate: (newMeal) => {},
-    // onError: () => {},
-    // onSettled: () => {},
+    //NOTE: 에러시 이전데이터로 복구
+    onError: (_err, _newTodo, context) => {
+      queryClient.setQueryData("meals", context.previousMealData);
+    },
+    //NOTE: 강제 리프레쉬
+    onSettled: () => {
+      queryClient.invalidateQueries("meals");
+    },
   });
 };

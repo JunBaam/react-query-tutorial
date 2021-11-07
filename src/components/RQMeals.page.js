@@ -73,7 +73,7 @@ export const RQMealsPage = () => {
           value={menu}
           onChange={(e) => setMenu(e.target.value)}
         />
-        <button onClick={handleAddHeroClick}>Add Hero</button>
+        <button onClick={handleAddHeroClick}>밥추가</button>
       </div>
 
       <button onClick={refetch}>fetch meals</button>
