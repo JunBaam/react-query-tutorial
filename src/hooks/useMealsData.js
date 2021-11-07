@@ -5,6 +5,10 @@ const fetchMeals = () => {
   return axios.get("http://localhost:4000/meals");
 };
 
+const addMeal = (meal) => {
+  return axios.post("http://localhost:4000/meals", meal);
+};
+
 export const useMealsData = (onSuccess, onError) => {
   return useQuery("meals", fetchMeals, {
     // cacheTime: 5000,  //NOTE: defulat 5분
@@ -28,5 +32,26 @@ export const useMealsData = (onSuccess, onError) => {
     //   const superMealsNames = data.data.map((value) => value.name);
     //   return superMealsNames;
     // },
+  });
+};
+
+export const useAddMealData = () => {
+  const queryClient = useQueryClient();
+  return useMutation(addMeal, {
+    onSuccess: (data) => {
+      // NOTE: invalidation  stale 쿼리를 폐기
+      //NOTE: 성공시 ui에 바로반영, 바로 데이터를 새로가져옴(re-fetch)
+      // queryClient.invalidateQueries("meals");
+      //NOTE: 기존 오래된 데이터에 새로추가된 데이터를 바로 추가해서 반영 (re-fetch 없이)
+      queryClient.setQueryData("meals", (oldQueryData) => {
+        return {
+          ...oldQueryData,
+          data: [...oldQueryData.data, data.data],
+        };
+      });
+    },
+    // onMutate: (newMeal) => {},
+    // onError: () => {},
+    // onSettled: () => {},
   });
 };

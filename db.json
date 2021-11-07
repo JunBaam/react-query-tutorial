@@ -19,9 +19,13 @@
       "id": 4,
       "name": "디저트으",
       "menu": "두유"
+    },
+    {
+      "name": "배고프면 ",
+      "menu": "응애",
+      "id": 5
     }
   ],
-
   "languages": [
     {
       "id": 1,
@@ -45,7 +49,11 @@
   "channels": [
     {
       "id": "lunch",
-      "courses": ["pig", "cow", "chic"]
+      "courses": [
+        "pig",
+        "cow",
+        "chic"
+      ]
     }
   ],
   "colors": [
